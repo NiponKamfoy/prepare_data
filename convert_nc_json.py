@@ -204,8 +204,8 @@ from config import Config
 
 #get name of index in folder
 config_data = Config() 
-folder_data = config_data['raw_data_path']
-output_path = config_data['output_path'] # path of output  output_path
+folder_data = config_data['read_nc_path']
+output_path = config_data['output_json_path'] # path of output  output_path
 dir_list2 = os.listdir(folder_data)
 
 ### create file each province
