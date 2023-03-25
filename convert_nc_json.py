@@ -23,7 +23,7 @@ def get_data(index, location_index, index_type):
     time = data_index.variables['time']
     unit_nc = time.units.split(' ')[0].strip()
     if (unit_nc == "month"):
-        variable_name = index.split("_")[-2]
+        variable_name = index.split("_")[-1]
         date_format = "%Y-%m"
     else :
         date_format = "%Y"
@@ -209,57 +209,72 @@ output_path = config_data['output_json_path'] # path of output  output_path
 dir_list2 = os.listdir(folder_data)
 
 ### create file each province
-for big_folder in dir_list2:
-    folder_sub_data = rf"{folder_data}\{big_folder}" # path of data 
-    dir_list3 = os.listdir(folder_sub_data)
-    for sub_folder in dir_list3:
-        data_path = rf"{folder_data}\{big_folder}\{sub_folder}" # path of data 
-        location_index = data_path.split('\\')[-2]
-        index_type = data_path.split('\\')[-1]
-        dir_list = os.listdir(data_path)
+for grid_size in dir_list2:
+    folder_grid_size = rf"{folder_data}\{grid_size}" # path of data 
+    dir_list3 = os.listdir(folder_grid_size)
+    for data_provider in dir_list3:
+        folder_data_provider= rf"{folder_data}\{grid_size}\{data_provider}" # path of data 
+        dir_list4 = os.listdir(folder_data_provider)
+        for index_name in dir_list4:
+            data_path = rf"{folder_data}\{grid_size}\{data_provider}\{index_name}" # path of data 
+            location_index = data_path.split('\\')[-2]
+            index_type = data_path.split('\\')[-1]
+            dir_list = os.listdir(data_path)
 
-        try:
-            os.mkdir(f"{output_path}\{location_index}\{index_type}")
-        except:
-            pass
+            try:
+                os.mkdir(f"{output_path}\{location_index}\{index_type}")
+            except:
+                pass
 
-        for folder_name in dir_list:
-            print(folder_name)
-            if(folder_name != 'monthly'):
-                name_index = folder_name.split('.')[0].split('_')
-                name_subfolder = folder_name.split('.')[0] # mpi_hist_spi_m3 
-                dir_old_data = []
-                try:
-                    os.mkdir(f"{output_path}\{location_index}\{index_type}\{name_subfolder}") 
-                except:
-                    old_data = os.listdir(f"{output_path}\{location_index}\{index_type}\{name_subfolder}")
-                    for i in old_data:
-                        temp = i.split(".")[0] 
-                        dir_old_data.append(temp)
+            for folder_name in dir_list:
+                print(folder_name)
+                if(folder_name != 'monthly'):
+                    name_index = folder_name.split('.')[0].split('_')
+                    name_subfolder = folder_name.split('.')[0] # mpi_hist_spi_m3 
+                    dir_old_data = []
+                    try:
+                        if(not os.path.exists(f"{output_path}\{location_index}")):
+                            os.mkdir(f"{output_path}\{location_index}")
+                        if(not os.path.exists(f"{output_path}\{location_index}\{index_type}")):
+                            os.mkdir(f"{output_path}\{location_index}\{index_type}")
+                        if(not os.path.exists(f"{output_path}\{location_index}\{index_type}\{name_subfolder}")):
+                            os.mkdir(f"{output_path}\{location_index}\{index_type}\{name_subfolder}")
+                        # os.mkdir(f"{output_path}\{location_index}\{index_type}\{name_subfolder}") 
+                    except:
+                        if(not os.path.exists(f"{output_path}\{location_index}")):
+                            os.mkdir(f"{output_path}\{location_index}")
+                        if(not os.path.exists(f"{output_path}\{location_index}\{index_type}")):
+                            os.mkdir(f"{output_path}\{location_index}\{index_type}")
+                        if(not os.path.exists(f"{output_path}\{location_index}\{index_type}\{name_subfolder}")):
+                            os.mkdir(f"{output_path}\{location_index}\{index_type}\{name_subfolder}")
+                        old_data = os.listdir(f"{output_path}\{location_index}\{index_type}\{name_subfolder}")
+                        for i in old_data:
+                            temp = i.split(".")[0] 
+                            dir_old_data.append(temp)
 
-                num_pro = 1
-                for i in data_province['features']:
-                    name_province = i['properties']['name']
-                    print("province: ",num_pro,"/",len(data_province['features']))
-                    num_pro += 1
-                    if(name_province not in dir_old_data):
-                        data_json = convert_nc_json(name_province, name_subfolder, location_index, index_type)
-                        json_object = json.dumps(data_json, indent=4)
-                        # Writing to sample.json  , 'cdd_era', 'spei'
-                        with open(f"{output_path}\{location_index}\{index_type}\{name_subfolder}\{name_province}.json", "w") as outfile:
-                            outfile.write(json_object)
-                num_country = 1
-                for i in data_SEA['features']:
-                    contry_name = i['properties']['name']
-                    c_name = contry_name.split(' ')[0]
-                    if(c_name not in dir_old_data):
-                        data_json = convert_nc_json(contry_name, name_subfolder, location_index, index_type)
-                        json_object = json.dumps(data_json, indent=4)
-                        # Writing to sample.json  , 'cdd_era', 'spei'
-                        with open(f"{output_path}\{location_index}\{index_type}\{name_subfolder}\{c_name}.json", "w") as outfile:
-                            outfile.write(json_object)
-                    print("country: ",num_country,"/",len(data_SEA['features']))
-                    num_country += 1
+                    num_pro = 1
+                    for i in data_province['features']:
+                        name_province = i['properties']['name']
+                        print("province: ",num_pro,"/",len(data_province['features']))
+                        num_pro += 1
+                        if(name_province not in dir_old_data):
+                            data_json = convert_nc_json(name_province, name_subfolder, location_index, index_type)
+                            json_object = json.dumps(data_json, indent=4)
+                            # Writing to sample.json  , 'cdd_era', 'spei'
+                            with open(f"{output_path}\{location_index}\{index_type}\{name_subfolder}\{name_province}.json", "w") as outfile:
+                                outfile.write(json_object)
+                    num_country = 1
+                    for i in data_SEA['features']:
+                        contry_name = i['properties']['name']
+                        c_name = contry_name.split(' ')[0]
+                        if(c_name not in dir_old_data):
+                            data_json = convert_nc_json(contry_name, name_subfolder, location_index, index_type)
+                            json_object = json.dumps(data_json, indent=4)
+                            # Writing to sample.json  , 'cdd_era', 'spei'
+                            with open(f"{output_path}\{location_index}\{index_type}\{name_subfolder}\{c_name}.json", "w") as outfile:
+                                outfile.write(json_object)
+                        print("country: ",num_country,"/",len(data_SEA['features']))
+                        num_country += 1
                 
 
 

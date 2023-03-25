@@ -18,8 +18,10 @@ def get_data_index(folder_name, pairs_lat_lon):
     # but if it have date frequency is month data_split_t will have 28324 + 1 month = 48325 index
 
     # use for set unit of time for NC file
-    # check! Is date frequency is monthly? and set date start for nc data 
-    if(len(data_index_split[0].split('\t')) != pairs_lat_lon + 1):
+    # check! Is date frequency is monthly? and set date start for nc data
+    num_data =  len(data_index_split)
+    num_data_year = 129
+    if(num_data == num_data_year):
         date_start = data_index_split[0].split("\t")[0] 
         date_end = data_index_split[-1].split("\t")[0]
     else:
@@ -45,7 +47,7 @@ def get_data_index(folder_name, pairs_lat_lon):
             #loop data which split with \t begin index = 2 cause index 0 is year data and index 1 is month data
             for i in range(2, len(data_split_t)):
                 if(data_split_t[i] == 'NA' or data_split_t[i] == '' or data_split_t[i] == ' '):
-                    temp.append(0)
+                    temp.append('NA')
                 else:
                     temp.append(float(data_split_t[i]))
         index_formated.append(temp)
@@ -70,7 +72,11 @@ def get_data_latlon():
     elif(type_data == 'csv'):
         data_lonlat = open(config_path['lat_lon_path'], "r")
         data_lonlat_split = list(csv.reader(data_lonlat, delimiter=","))
+        first = True
         for i in data_lonlat_split:
+            if (first):
+                first = False
+                continue
             data_lon.append(i[0])
             data_lat.append(i[1])
     
@@ -144,7 +150,7 @@ for folder_name in dir_list:
             lon = ds.createDimension('lon', len(data_lon))
 
             times = ds.createVariable('time', 'f4', ('time',))
-            if (len(data_index[1]) > 130):
+            if (len(data_index[1]) == 129):
                 times.units = 'year since ' + data_index[2]
             else :
                 times.units = 'month since ' + data_index[2]
